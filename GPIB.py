@@ -1,4 +1,4 @@
-import serial, time
+import serial
 
 class GPIB:
     def __init__(self, device_file='/dev/ttyUSB0', channel=21):
@@ -108,10 +108,13 @@ class DMM:
     # -------------------------------
 
     def read(self):
-        return float(self.query("READ"))
+        self.send("READ?")
+        return float(self.ser.readline().decode("ascii").strip())
 
     def fetch(self):
-        return float(self.query("FETC"))
+        self.send("FETC?")
+        return float(self.ser.readline().decode("ascii").strip())
+
 
     def measure(self, mode):
         if mode not in self.CONFIG:
@@ -212,3 +215,17 @@ class agilent:
 
     def close(self):
         self.ser.close()
+
+def test():
+    dmm = DMM("/dev/ttyUSB0")
+
+    print(dmm.identify())
+
+    dmm.configure("VDC", range_val=10, resolution=1e-6)
+    value = dmm.read()
+    print(value)
+
+    dmm.close()
+
+if __name__ == "__main__":
+    test()

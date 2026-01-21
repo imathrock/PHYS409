@@ -1,9 +1,24 @@
 import serial
 
+#class agilent(GPIB):
+    """
+    Manage analogue input from the DAQ board.
+    """
+#    def __init__(self, channel=21, device_file="/dev/ttyUSB0"):
+#        GPIB.__init__(self, device_file, channel)
+#        self.Commandlist = {"Frequency":"FREQ", "Amplitude":"AMPL", "Waveform":"WAVE", "Amplitude":"AMPLT", "DC Offset":"DCOFFS"}
+
+#    def Query(self, command):
+#        if command in  self.Commandlist:
+#            self.SendCommand(self.Commandlist[command]+"?")
+#            return self.ReadSingle()
+
+#    def Command(self, command, value):
+#        if command in  self.Commandlist:
+#            self.SendCommand(self.Commandlist[command] + " " + str(value))
+
 class GPIB:
     def __init__(self, device_file='/dev/ttyUSB0', channel=21):
-
-        #Open the Serial port.
         self.ser = serial.Serial(device_file, timeout = 3)
         self.ser.flushOutput()
         self.ser.flushInput()

@@ -31,6 +31,12 @@ class dmm():
         return value
 
 
+
 dmm = dmm("/dev/ttyUSB0", channel=21)  # HP 34401A
 dmm.SendCommand("*IDN?")
 print(dmm.ReadSingle().decode().strip())
+dmm.SendCommand("CONF:VOLT:DC 1,0.0001")
+while(1):
+    dmm.SendCommand("READ?")                  # trigger measurement
+    value = dmm.ReadSingle()                  # read ASCII result
+    print(float(value.decode().strip()))

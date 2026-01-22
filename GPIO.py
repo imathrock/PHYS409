@@ -32,22 +32,25 @@ class dmm():
 
     def config(self, type, mode, range, res):
         type = type.upper()
-        mode = mode.upper()
         if type not in ['VOLT', 'CURR', 'RES']:
             raise ValueError("Measurement type must be set to 'VOLT', 'CURR', 'RES'")
-        if type != 'RES' and mode not in ['DC', 'AC']:
-            raise ValueError("mode must be 'DC' or 'AC' for VOLT or CURR")
-        cmd = 'CONF:'
-        if type == 'RES':
-            cmd+=type
+
+        if type != 'RES':
+            mode = mode.upper()
+            if mode not in ['DC', 'AC']:
+                raise ValueError("mode must be 'DC' or 'AC' for VOLT or CURR")
+            cmd = f'CONF:{type}:{mode}'
         else:
-            cmd+=f'{type}:{mode}'
+            cmd = f'CONF:{type}'
+
         if range is not None:
-            cmd+= f'{range}'
+            cmd += f' {range}'  
             if res is not None:
-                cmd+=f',{res}'
-        print("Configuration of DMM is :",cmd)
+                cmd += f',{res}'
+
+        print("Configuration of DMM is :", cmd)
         self.SendCommand(cmd)
+
     
     def id(self):
         self.SendCommand("*IDN?")
@@ -172,10 +175,15 @@ class lockin():
         self.ser.flushOutput()
         return value
 
+
+# Can store all of it in a list and then write all of it once to the csv file.
 if __name__ == "__main__":
     dmm = dmm()
+    dmm.SendCommand("*RST")
+    dmm.SendCommand("*CLS")
     dmm.id()
     dmm.config("RES",None,10000,0.01)
+
     with open('temp.csv', mode='w',newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Time', 'Ohms'])
@@ -183,10 +191,11 @@ if __name__ == "__main__":
         start_time = time.time()
         for i in range(100):
             current_time = time.time() - start_time
+            dmm.SendCommand("MEAS:FRES?")
             resistance = dmm.ReadSingle()
             writer.writerow([current_time, resistance])
             file.flush()
-            print(f"Recorded: Time={current_time:.2f}s, R={resistance:.3f}")
-            time.sleep(0.5)
+            print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
+
 
 

@@ -1,4 +1,4 @@
-import serial
+import serial, time
 
 class dmm():
     def __init__(self, device_file = '/dev/ttyUSB0', channel = 20):
@@ -30,7 +30,7 @@ class dmm():
         self.ser.flushOutput()
         return value
 
-    def DMMConfig(self, type, mode, range, res):
+    def config(self, type, mode, range, res):
         type = type.upper()
         mode = mode.upper()
         if type not in ['VOLT', 'CURR', 'RES']:
@@ -42,9 +42,9 @@ class dmm():
             cmd+=type
         else:
             cmd+=f'{type}:{mode}'
-        if range is not none:
+        if range is not None:
             cmd+= f'{range}'
-            if res is not none:
+            if res is not None:
                 cmd+=f',{res}'
         print("Configuration of DMM is :",cmd)
         self.SendCommand(cmd)
@@ -88,7 +88,7 @@ class fg():
     def OFF(self):
         self.SendCommand("OUTP OFF")
 
-    def FGConfig(self,wave,freq,ampl,offset,load = 'INF'):
+    def config(self,wave,freq,ampl,offset,load = 'INF'):
         wave = wave.upper()
         OFF()
         self.SendCommand(f"FUNC {wave}")
@@ -110,12 +110,16 @@ class fg():
         self.SendCommand("*IDN?")
         print(self.ReadSingle())
 
+fg = fg()
+fg.id()
+fg.config("SINE",1200,10.0,0)
+fg.ON()
 
-dmm = dmm("/dev/ttyUSB0", channel=21)  # HP 34401A
-dmm.SendCommand("*IDN?")
-print(dmm.ReadSingle().decode().strip())
-dmm.SendCommand("CONF:VOLT:DC 1,0.0001")
-while(1):
-    dmm.SendCommand("READ?")                  # trigger measurement
-    value = dmm.ReadSingle()                  # read ASCII result
-    print(float(value.decode().strip()))
+# dmm = dmm()  # HP 34401A
+# dmm.id()
+# dmm.config("volt","DC",10,0.01)
+# while(1):
+#     dmm.SendCommand("READ?")                  # trigger measurement
+#     time.sleep(0.05)
+#     value = dmm.ReadSingle()                  # read ASCII result
+#     print(float(value.decode().strip()))

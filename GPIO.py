@@ -88,38 +88,73 @@ class fg():
     def OFF(self):
         self.SendCommand("OUTP OFF")
 
-    def config(self,wave,freq,ampl,offset,load = 'INF'):
+    def config(self, wave, freq, ampl, offset = 0.0, load = 'INF'):
+        self.OFF()
+        # Check waveforms
+        if not isinstance(wave,str):
+            raise TypeError("Wave must be one of : 'SIN', 'SQU', 'TRI', 'RAMP'")
+
+        # Check frequency 
+        if freq is None:
+            raise ValueError("Frequency can't be None")
+        else:
+            if not isinstance(freq, (int,float)):
+                raise TypeError("Frequency is of incorrect type, It must be float or int")
+            else:
+                if freq < 0:
+                    raise ValueError("Frequency can't be negative")
+                elif freq > 10e6:
+                    raise ValueError("Frequency exceeds machine limits of 10 MHz")
+
+        # Check Amplitude
+        if ampl is None:
+            raise ValueError("Amplitude can't be None")
+        else:
+            if not isinstance(ampl, (int,float)):
+                raise TypeError("Amplitude is of incorrect type, It must be float")
+            else:
+                if ampl > 10.0:
+                    raise ValueError("Amplitude exceeds machine limit of 10.0 Volts")
+                elif ampl < 0.05:
+                    raise ValueError("Amplitude must be > 50 mV")
+
+        # Check offset
+        if offset is not None:
+            if not isinstance(offset, (int, float)):
+                raise TypeError("offset must be numeric")
+            
+            if abs(offset) + ampl / 2 > 10:
+                raise ValueError("offset + Vpp/2 exceeds output compliance")
+            
         wave = wave.upper()
-        OFF()
+        wavetypes = {'SIN', 'SQU', 'TRI', 'RAMP'}
+        if wave not in wavetypes:
+            raise ValueError(f"Invalid waveform {wave}.\n Wave must be one of : 'SIN', 'SQU', 'TRI', RAMP")
+            
         self.SendCommand(f"FUNC {wave}")
-        if freq is not none:
-            self.SendCommand(f"FREQ {freq}")
-        if ampl is not none:
-            self.SendCommand(f"VOLT {ampl}")
-        if offset is not none:
-            self.SendCommand(f"VOLT:OFFS {offset}")
+        self.SendCommand(f"FREQ {freq}")
+        self.SendCommand(f"VOLT {ampl} VPP")
+        self.SendCommand(f"VOLT:OFFS {offset}")
         self.SendCommand(f"OUTP:LOAD {load}")
 
+        print(f"Configuration Sent: Wave={wave}, Freq={freq}, Ampl={ampl}, Offset={offset}, Load={load}")
+
+    def reset(self):
+        self.SendCommand("*RST")
+
     def change_freq(self, freq):
-        OFF()
+        self.OFF()
         self.SendCommand(f"FREQ {freq}")
         time.sleep(0.1)
-        ON()
+        self.ON()
 
     def id(self):
         self.SendCommand("*IDN?")
         print(self.ReadSingle())
 
-fg = fg()
-fg.id()
-fg.config("SINE",1200,10.0,0)
-fg.ON()
 
-# dmm = dmm()  # HP 34401A
-# dmm.id()
-# dmm.config("volt","DC",10,0.01)
-# while(1):
-#     dmm.SendCommand("READ?")                  # trigger measurement
-#     time.sleep(0.05)
-#     value = dmm.ReadSingle()                  # read ASCII result
-#     print(float(value.decode().strip()))
+if __name__ == "__main__":
+    fg = fg()
+    fg.id()
+    fg.config("SINE",1200,10.0)
+    fg.ON()

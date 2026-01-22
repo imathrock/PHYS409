@@ -1,4 +1,4 @@
-import serial, time
+import serial, time, csv
 
 class dmm():
     def __init__(self, device_file = '/dev/ttyUSB0', channel = 20):
@@ -173,5 +173,20 @@ class lockin():
         return value
 
 if __name__ == "__main__":
-    SR510 = lockin()
-    SR510.SendCommand("G 22")
+    dmm = dmm()
+    dmm.id()
+    dmm.config("RES",None,10000,0.01)
+    with open('temp.csv', mode='w',newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Time', 'Ohms'])
+        print("Starting measurement loop...")
+        start_time = time.time()
+        for i in range(100):
+            current_time = time.time() - start_time
+            resistance = dmm.ReadSingle()
+            writer.writerow([current_time, resistance])
+            file.flush()
+            print(f"Recorded: Time={current_time:.2f}s, R={resistance:.3f}")
+            time.sleep(0.5)
+
+

@@ -53,6 +53,7 @@ class dmm():
         self.SendCommand("*IDN?")
         print(self.ReadSingle())
 
+
 class fg():
     def __init__(self, device_file = '/dev/ttyUSB0', channel = 21):
         # begin serial 
@@ -89,47 +90,36 @@ class fg():
         self.SendCommand("OUTP OFF")
 
     def config(self, wave, freq, ampl, offset = 0.0, load = 'INF'):
-        self.OFF()
-        # Check waveforms
+        self.reset()
         if not isinstance(wave,str):
             raise TypeError("Wave must be one of : 'SIN', 'SQU', 'TRI', 'RAMP'")
-
-        # Check frequency 
         if freq is None:
-            raise ValueError("Frequency can't be None")
-        else:
-            if not isinstance(freq, (int,float)):
-                raise TypeError("Frequency is of incorrect type, It must be float or int")
-            else:
-                if freq < 0:
-                    raise ValueError("Frequency can't be negative")
-                elif freq > 10e6:
-                    raise ValueError("Frequency exceeds machine limits of 10 MHz")
+            raise TypeError("Frequency can't be None")
+        if not isinstance(freq, (int,float)):
+            raise TypeError("Frequency is of incorrect type, It must be float or int")
+        if not isinstance(ampl, (int,float)):
+            raise TypeError("Amplitude is of incorrect type, It must be float")
+        if not isinstance(offset, (int, float)):
+            raise TypeError("offset must be numeric")
 
-        # Check Amplitude
-        if ampl is None:
-            raise ValueError("Amplitude can't be None")
-        else:
-            if not isinstance(ampl, (int,float)):
-                raise TypeError("Amplitude is of incorrect type, It must be float")
-            else:
-                if ampl > 10.0:
-                    raise ValueError("Amplitude exceeds machine limit of 10.0 Volts")
-                elif ampl < 0.05:
-                    raise ValueError("Amplitude must be > 50 mV")
 
-        # Check offset
-        if offset is not None:
-            if not isinstance(offset, (int, float)):
-                raise TypeError("offset must be numeric")
-            
-            if abs(offset) + ampl / 2 > 10:
-                raise ValueError("offset + Vpp/2 exceeds output compliance")
-            
         wave = wave.upper()
         wavetypes = {'SIN', 'SQU', 'TRI', 'RAMP'}
         if wave not in wavetypes:
             raise ValueError(f"Invalid waveform {wave}.\n Wave must be one of : 'SIN', 'SQU', 'TRI', RAMP")
+        
+        if freq < 0:
+            raise ValueError("Frequency can't be negative")
+        elif freq > 10e6:
+            raise ValueError("Frequency exceeds machine limits of 10 MHz")
+        
+        if ampl > 10.0:
+            raise ValueError("Amplitude exceeds machine limit of 10.0 Volts")
+        elif ampl < 0.05:
+            raise ValueError("Amplitude must be > 50 mV")
+
+        if abs(offset) + ampl / 2 > 10:
+            raise ValueError("offset + Vpp/2 exceeds output compliance")        
             
         self.SendCommand(f"FUNC {wave}")
         self.SendCommand(f"FREQ {freq}")

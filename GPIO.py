@@ -178,24 +178,25 @@ class lockin():
 
 # Can store all of it in a list and then write all of it once to the csv file.
 if __name__ == "__main__":
+
     dmm = dmm()
     dmm.SendCommand("*RST")
     dmm.SendCommand("*CLS")
     dmm.id()
     dmm.config("RES",None,10000,0.01)
+    data_buffer = []
+    print("Starting measurement loop...")
+    start_time = time.time()
+    for i in range(100):
+        current_time = time.time() - start_time
+        dmm.SendCommand("MEAS:FRES?")
+        resistance = float(dmm.ReadSingle().strip())
+        data_buffer.append([current_time,resistance])
+        print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
 
     with open('temp.csv', mode='w',newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Time', 'Ohms'])
-        print("Starting measurement loop...")
-        start_time = time.time()
-        for i in range(100):
-            current_time = time.time() - start_time
-            dmm.SendCommand("MEAS:FRES?")
-            resistance = dmm.ReadSingle()
-            writer.writerow([current_time, resistance])
-            file.flush()
-            print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
-
+        writer.writerows(data_buffer)
 
 

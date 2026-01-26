@@ -1,7 +1,23 @@
+from typing import Union
 import serial, time, csv
 
+# class instrument_controller():
+#     def __init__(self, device_file = '/dev/ttyUSB0', channel = 20) -> None:
+#         self.ser = serial.Serial(device_file,timeout=3)
+#         self.ser.flushOutput()
+#         self.ser.flushInput()
+#         self.ser.write("++mode 1\r".encode())
+#         self.ser.write("++auto 0\r".encode())
+#         self.ser.write("++eoi 1\r".encode())
+#         self.channel = channel
+#         addr_string = "++addr " + str(self.channel) + "\r"
+#         self.ser.write(addr_string.encode())
+#         self.ser.flushOutput()
+#         self.ser.flushInput()
+    
+
 class dmm():
-    def __init__(self, device_file = '/dev/ttyUSB0', channel = 20):
+    def __init__(self, device_file = '/dev/ttyUSB0', channel = 20) -> None:
         # begin serial 
         self.ser = serial.Serial(device_file,timeout=3)
         # Clear any pending buffers
@@ -19,18 +35,18 @@ class dmm():
         self.ser.flushOutput()
         self.ser.flushInput()
     
-    def SendCommand(self, command):
+    def SendCommand(self, command : str) -> None:
         cmdstr = command + "\r"
         self.ser.write(cmdstr.encode())
     
-    def ReadSingle(self):
+    def ReadSingle(self) -> str:
         self.ser.write("++read eoi\r".encode())
         value = self.ser.readline()
         self.ser.flushInput()
         self.ser.flushOutput()
         return value
 
-    def config(self, type, mode, range, res):
+    def config(self, type : str, mode : str, range : Union[float,int], res : Union[float,int]) -> None:
         type = type.upper()
         if type not in ['VOLT', 'CURR', 'RES']:
             raise ValueError("Measurement type must be set to 'VOLT', 'CURR', 'RES'")
@@ -51,14 +67,31 @@ class dmm():
         print("Configuration of DMM is :", cmd)
         self.SendCommand(cmd)
 
+    def reset(self) -> None:
+        self.SendCommand("*RST")
+
+    def clear_errors(self) -> None:
+        self.SendCommand("*CLS")
+
+    def meas4W(self) -> float:
+        self.SendCommand("MEAS:FRES?")
+        return float(dmm.ReadSingle().strip())
+        
+    def meas2W(self) -> float:
+        self.SendCommand("MEAS:RES?")
+        return float(dmm.ReadSingle().strip())
     
-    def id(self):
+    def meas_volt(self):
+        self.SendCommand("MEAS:VOLT:DC")
+        return float(dmm.ReadSingle().strip())
+    
+    def id(self) -> None:
         self.SendCommand("*IDN?")
         print(self.ReadSingle())
 
 
 class fg():
-    def __init__(self, device_file = '/dev/ttyUSB0', channel = 19):
+    def __init__(self, device_file = '/dev/ttyUSB0', channel = 19) -> None:
         # begin serial 
         self.ser = serial.Serial(device_file,timeout=3)
         # Clear any pending buffers
@@ -76,23 +109,23 @@ class fg():
         self.ser.flushOutput()
         self.ser.flushInput()
     
-    def SendCommand(self, command):
+    def SendCommand(self, command : str) -> None:
         cmdstr = command + "\r"
         self.ser.write(cmdstr.encode())
     
-    def ReadSingle(self):
+    def ReadSingle(self) -> str:
         self.ser.write("++read eoi\r".encode())
         value = self.ser.readline()
         self.ser.flushInput()
         self.ser.flushOutput()
         return value
 
-    def ON(self):
+    def ON(self) -> None:
         self.SendCommand("OUTP ON")
-    def OFF(self):
+    def OFF(self) -> None:
         self.SendCommand("OUTP OFF")
 
-    def config(self, wave, freq, ampl, offset = 0.0, load = 'INF'):
+    def config(self, wave : str, freq : Union[float,int], ampl : Union[float,int], offset = 0.0, load = 'INF') -> None:
         self.reset()
         if not isinstance(wave,str):
             raise TypeError("Wave must be one of : 'SIN', 'SQU', 'TRI', 'RAMP'")
@@ -104,7 +137,6 @@ class fg():
             raise TypeError("Amplitude is of incorrect type, It must be float")
         if not isinstance(offset, (int, float)):
             raise TypeError("offset must be numeric")
-
 
         wave = wave.upper()
         wavetypes = {'SIN', 'SQU', 'TRI', 'RAMP'}
@@ -132,21 +164,24 @@ class fg():
 
         print(f"Configuration Sent: Wave={wave}, Freq={freq}, Ampl={ampl}, Offset={offset}, Load={load}")
 
-    def reset(self):
+    def reset(self) -> None:
         self.SendCommand("*RST")
 
-    def change_freq(self, freq):
+    def clear_errors(self) -> None:
+        self.SendCommand("*CLS")
+
+    def change_freq(self, freq) -> None:
         self.OFF()
         self.SendCommand(f"FREQ {freq}")
         time.sleep(0.1)
         self.ON()
 
-    def id(self):
+    def id(self) -> None:
         self.SendCommand("*IDN?")
         print(self.ReadSingle())
 
 class lockin():
-    def __init__(self, device_file = '/dev/ttyUSB0', channel = 23):
+    def __init__(self, device_file = '/dev/ttyUSB0', channel = 23) -> None:
         # begin serial 
         self.ser = serial.Serial(device_file,timeout=3)
         # Clear any pending buffers
@@ -164,11 +199,11 @@ class lockin():
         self.ser.flushOutput()
         self.ser.flushInput()
 
-    def SendCommand(self, command):
+    def SendCommand(self, command) -> None:
         cmdstr = command + "\r"
         self.ser.write(cmdstr.encode())
     
-    def ReadSingle(self):
+    def ReadSingle(self) -> str:
         self.ser.write("++read eoi\r".encode())
         value = self.ser.readline()
         self.ser.flushInput()
@@ -180,8 +215,8 @@ class lockin():
 if __name__ == "__main__":
 
     dmm = dmm()
-    dmm.SendCommand("*RST")
-    dmm.SendCommand("*CLS")
+    dmm.reset()
+    dmm.clear_errors()
     dmm.id()
     dmm.config("RES",None,10000,0.01)
     data_buffer = []
@@ -189,12 +224,12 @@ if __name__ == "__main__":
     start_time = time.time()
     for i in range(100):
         current_time = time.time() - start_time
-        dmm.SendCommand("MEAS:FRES?")
-        resistance = float(dmm.ReadSingle().strip())
+        resistance = dmm.meas4W()
+        voltage = dmm.
         data_buffer.append([current_time,resistance])
         print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
 
-    with open('temp.csv', mode='w',newline='') as file:
+    with open('temperature-resistance.csv', mode='w',newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Time', 'Ohms'])
         writer.writerows(data_buffer)

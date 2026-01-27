@@ -29,8 +29,14 @@ class PrologixBus:
 if __name__ == "__main__":
     pbus = PrologixBus()
     pbus.SendCommand(19,"*IDN?")
-    print(pbus.ReadSingle().strip())
+    print(pbus.ReadSingle(19).strip())
     pbus.SendCommand(20,"*IDN?")
-    print(pbus.ReadSingle().strip())
+    print(pbus.ReadSingle(20).strip())
+    pbus.SendCommand(23,"Q")
+    print(pbus.ReadSingle(23).strip())
+    for i in range(1,100):
+        pbus.SendCommand(23,"Q")
+        print(pbus.ReadSingle(23).strip())
+
 
     

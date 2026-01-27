@@ -1,23 +1,8 @@
 from typing import Union
 import serial, time, csv
 
-# class instrument_controller():
-#     def __init__(self, device_file = '/dev/ttyUSB0', channel = 20) -> None:
-#         self.ser = serial.Serial(device_file,timeout=3)
-#         self.ser.flushOutput()
-#         self.ser.flushInput()
-#         self.ser.write("++mode 1\r".encode())
-#         self.ser.write("++auto 0\r".encode())
-#         self.ser.write("++eoi 1\r".encode())
-#         self.channel = channel
-#         addr_string = "++addr " + str(self.channel) + "\r"
-#         self.ser.write(addr_string.encode())
-#         self.ser.flushOutput()
-#         self.ser.flushInput()
-    
-
-class dmm():
-    def __init__(self, device_file = '/dev/ttyUSB0', channel = 20) -> None:
+class GPIB():
+    def __init__(self, device_file = '/dev/ttyUSB0', channel = 25) -> None:
         # begin serial 
         self.ser = serial.Serial(device_file,timeout=3)
         # Clear any pending buffers
@@ -34,6 +19,22 @@ class dmm():
         self.ser.write(addr_string.encode())
         self.ser.flushOutput()
         self.ser.flushInput()
+
+    def SendCommand(self, command) -> None:
+        cmdstr = command + "\r"
+        self.ser.write(cmdstr.encode())
+    
+    def ReadSingle(self) -> str:
+        self.ser.write("++read eoi\r".encode())
+        value = self.ser.readline()
+        self.ser.flushInput()
+        self.ser.flushOutput()
+        return value
+    
+
+class dmm(GPIB):
+    def __init__(self, device_file = '/dev/ttyUSB0', channel = 20) -> None:
+        GPIB.__init__(channel=channel)
     
     def SendCommand(self, command : str) -> None:
         cmdstr = command + "\r"
@@ -209,12 +210,24 @@ class lockin():
         self.ser.flushInput()
         self.ser.flushOutput()
         return value
+    
+    def set_time_const(self, time : int) -> None:
+        self.SendCommand("T"+str(time))
+
+    def set_sensitivity(self, value : int) -> None:
+        self.SendCommand("G"+str(value))
+    
+    def get_reading(self) -> None:
+        self.SendCommand("Q")
+        return float(self.ReadSingle())
+
 
 
 # Can store all of it in a list and then write all of it once to the csv file.
 if __name__ == "__main__":
 
     dmm = dmm()
+    lockin = lockin()
     dmm.reset()
     dmm.clear_errors()
     dmm.id()
@@ -225,7 +238,7 @@ if __name__ == "__main__":
     for i in range(100):
         current_time = time.time() - start_time
         resistance = dmm.meas4W()
-        voltage = dmm.
+        voltage = lockin.get_reading()
         data_buffer.append([current_time,resistance])
         print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
 

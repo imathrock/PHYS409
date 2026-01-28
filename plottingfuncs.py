@@ -5,7 +5,6 @@ def plot_phase_sweep(csv_filename):
     try:
         # Load the data
         df = pd.read_csv(csv_filename)
-        
         # verify columns exist to prevent KeyError
         if 'Phase_Deg' not in df.columns or 'Lockin_Output' not in df.columns:
             print("Error: CSV does not contain required columns 'Phase_Deg' and 'Lockin_Output'")
@@ -33,5 +32,21 @@ def plot_phase_sweep(csv_filename):
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
+def timevsres(csv_filename, save_path):
+    df = pd.read_csv(csv_filename)
+    plt.figure(figsize=(10, 6))
+    plt.plot(df['Time'],df['Ohms'], marker='o', linestyle='-', markersize=2, label='resistance vs time')
+    plt.title('Caliberation of room temp to liquid nitrogen ')
+    plt.xlabel('Time')
+    plt.ylabel('4 wire resistance')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend()
+    if save_path:
+        plt.savefig(save_path, dpi=300) # dpi=300 ensures high resolution
+        print(f"Plot saved to {save_path}")
+    plt.show()
+
+
 if __name__ == "__main__":
-    plot_phase_sweep('phase_sweep_data.csv')
+    # plot_phase_sweep('phase_sweep_data.csv')
+    timevsres('temperature-resistance.csv', 'time vs res og')

@@ -1,5 +1,5 @@
 from typing import Union
-import serial
+import serial, time, csv
 
 class PrologixBus:
     def __init__(self,device_file = '/dev/ttyUSB0',channel = -1):
@@ -18,6 +18,7 @@ class PrologixBus:
 
     def SendCommand(self,addr : int,command : str) -> None:
         if(self.channel != addr):
+            self.channel = addr
             addrstr = "++addr" + str(addr) + "\r"
             self.serial.write(addrstr.encode())
         cmdstr = command + "\r"
@@ -25,6 +26,7 @@ class PrologixBus:
 
     def ReadSingle(self, addr : int) -> str:
         if(self.channel != addr):
+            self.channel = addr
             addrstr = "++addr" + str(addr) + "\r"
             self.serial.write(addrstr.encode())
         self.serial.write("++read eoi\r".encode())
@@ -46,16 +48,50 @@ def meas4W(pbus : PrologixBus) -> float:
     pbus.SendCommand(pbus.DMM_addr,"MEAS:FRES?")
     return float(pbus.ReadSingle(pbus.DMM_addr).strip())
 
+def lockin_outp(pbus : PrologixBus) -> float:
+    pbus.SendCommand(pbus.lockin_addr,"Q")
+    return pbus.ReadSingle(pbus.lockin_addr).strip()
+
+def lockin_change_phase(pbus : PrologixBus, i : int) -> None:
+    pbus.SendCommand(pbus.lockin_addr,("P"+str(i)))
+
+# if __name__ == "__main__":
+#     pbus = PrologixBus()
+#     pbus.DMM_addr = 20
+#     pbus.lockin_addr = 23
+#     for i in range(1,360):
+#         lockin_change_phase(pbus,i)
+#         print("Lockin output:" + lockin_outp(pbus)+"| Resistance:" + meas4W(pbus))
+#         time.sleep(0.5)
+
+
 if __name__ == "__main__":
     pbus = PrologixBus()
     pbus.DMM_addr = 20
     pbus.lockin_addr = 23
-    pbus.SendCommand(23,"Q")
-    print(pbus.ReadSingle(23).strip())
-    for i in range(1,100):
-        pbus.SendCommand(23,"Q")
-        print(pbus.ReadSingle(23).strip())
-        print(meas4W)
-
-
     
+    # Define filename
+    csv_file = "phase_sweep_data.csv"
+
+    # Open file context
+    with open(csv_file, mode='w', newline='') as f:
+        writer = csv.writer(f)
+        # Write Header
+        writer.writerow(["Phase_Deg", "Lockin_Output", "Resistance_Ohm"])
+        
+        print(f"Starting sweep. Data saving to {csv_file}...")
+
+        for i in range(1, 360):
+            lockin_change_phase(pbus, i)
+            time.sleep(0.5) 
+            # Capture data
+            # decode() is added to ensure we write strings, not bytes, to the CSV
+            raw_lockin = lockin_outp(pbus)
+            lockin_val = raw_lockin.decode('utf-8') if isinstance(raw_lockin, bytes) else raw_lockin
+            resistance_val = meas4W(pbus)
+            # Write row to CSV
+            writer.writerow([i, lockin_val, resistance_val])
+            # Flush buffer to ensure data is saved even if script crashes
+            f.flush()
+            # Print to console (using f-string to prevent TypeError)
+            print(f"Phase: {i} | Lockin: {lockin_val} | Resistance: {resistance_val}")

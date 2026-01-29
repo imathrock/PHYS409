@@ -48,5 +48,5 @@ def timevsres(csv_filename, save_path):
 
 
 if __name__ == "__main__":
-    # plot_phase_sweep('phase_sweep_data.csv')
-    timevsres('temperature-resistance.csv', 'time vs res og')
+    # plot_phase_sweep('csv/phase_sweep_data.csv')
+    timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')

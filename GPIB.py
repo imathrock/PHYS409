@@ -62,7 +62,7 @@ if __name__ == "__main__":
     pbus.DMM_addr = 20
     #config DMM
     pbus.SendCommand(pbus.DMM_addr,"MEAS:FRES? 10000, 001")
-    
+
     data_buffer = []
     print("Starting measurement loop...")
     start_time = time.time()

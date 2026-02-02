@@ -1,32 +1,35 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import TempCal
 
 def plot_phase_sweep(csv_filename):
     try:
         # Load the data
         df = pd.read_csv(csv_filename)
-        # verify columns exist to prevent KeyError
+        res = sum(df['Resistance_Ohm']) / len(df)
+        temperature = TempCal.res_to_temp_K(res)
+        # Verify columns exist to prevent KeyError
         if 'Phase_Deg' not in df.columns or 'Lockin_Output' not in df.columns:
             print("Error: CSV does not contain required columns 'Phase_Deg' and 'Lockin_Output'")
             return
-
-        # Setup the plot
-        plt.figure(figsize=(10, 6))
-        
         # Plot Phase (X) vs Lockin Output (Y)
-        plt.plot(df['Phase_Deg'], df['Lockin_Output'], marker='o', linestyle='-', markersize=2, label='Lock-in Output')
-        
+        plt.plot(df['Phase_Deg'], df['Lockin_Output'], marker='o', 
+                 linestyle='-', markersize=2, label='Lock-in Output')
+        # Temperature annotation in a text box
+        # Positioned at top-left (0.05, 0.95) in axis coordinates
+        stats_text = f'$T = {temperature:.2f}\\ K$'
+        plt.text(0.05, 0.95, stats_text, transform=plt.gca().transAxes, 
+                 fontsize=12, verticalalignment='top', 
+                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
         # Formatting
         plt.title('Phase Sweep: Output Voltage vs Phase Angle')
         plt.xlabel('Phase (Degrees)')
-        plt.ylabel('Lock-in Output (V)')
+        plt.ylabel('Lock-in Output ($V$)')
         plt.grid(True, which='both', linestyle='--', linewidth=0.5)
         plt.legend()
-        
-        # Display
+        # Save output
         plt.tight_layout()
-        plt.show()
-
+        plt.savefig('phase_sweep_plot.png')
     except FileNotFoundError:
         print(f"Error: The file '{csv_filename}' was not found.")
     except Exception as e:
@@ -48,5 +51,5 @@ def timevsres(csv_filename, save_path):
 
 
 if __name__ == "__main__":
-    # plot_phase_sweep('csv/phase_sweep_data.csv')
-    timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')
+    plot_phase_sweep('csv/phase_sweep_data_BP_on_1kHz.csv')
+    # timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')

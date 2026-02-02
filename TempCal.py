@@ -30,8 +30,11 @@ print("================================")
 slope = (room_temp-liq_nit_temp)/(mean_res_ht-mean_res_lt)
 intercept = room_temp-(slope*mean_res_ht)
 
+print(slope, intercept)
+
 def res_to_temp_K(resistance):
     return slope*resistance+intercept
 
 print("Testing resistance function")
 print(str(res_to_temp_K(mean_res_ht)) + " " + str(room_temp))
+print(str(res_to_temp_K(mean_res_lt)) + " " + str(liq_nit_temp))

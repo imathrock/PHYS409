@@ -29,7 +29,7 @@ def plot_phase_sweep(csv_filename):
         plt.legend()
         # Save output
         plt.tight_layout()
-        plt.savefig('phase_sweep_plot.png')
+        plt.savefig('phase_sweep_plot_non_sc.png')
     except FileNotFoundError:
         print(f"Error: The file '{csv_filename}' was not found.")
     except Exception as e:
@@ -51,5 +51,5 @@ def timevsres(csv_filename, save_path):
 
 
 if __name__ == "__main__":
-    plot_phase_sweep('csv/phase_sweep_data_BP_on_1kHz.csv')
+    plot_phase_sweep('csv/phase_sweep_data_non_sc.csv')
     # timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')

@@ -33,7 +33,7 @@ intercept = room_temp-(slope*mean_res_ht)
 print(slope, intercept)
 
 def res_to_temp_K(resistance):
-    return slope*resistance+intercept
+    return -0.5137484328065629*resistance+611.2006356099807
 
 # print("Testing resistance function")
 # print(str(res_to_temp_K(mean_res_ht)) + " " + str(room_temp))

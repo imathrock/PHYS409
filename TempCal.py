@@ -30,7 +30,7 @@ std_res_lt = low_temp_df['Ohms'].std()
 slope = (room_temp-liq_nit_temp)/(mean_res_ht-mean_res_lt)
 intercept = room_temp-(slope*mean_res_ht)
 
-print(slope, intercept)
+# print(slope, intercept)
 
 def res_to_temp_K(resistance):
     return -0.5137484328065629*resistance+611.2006356099807

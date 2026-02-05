@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import TempCal
 
@@ -50,6 +51,39 @@ def timevsres(csv_filename, save_path):
     plt.show()
 
 
+def plot_lockin_vs_temp(filename, save_path):
+    """
+    Plots Lockin signal vs Temperature from a CSV file.
+    Assumes columns are named 'lockin' and 'Temp'.
+    """
+    # Load data
+    try:
+        df = pd.read_csv(filename)
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+        return
+
+    # Verify columns exist
+    if 'Temp' not in df.columns or 'lockin' not in df.columns:
+        print(f"Error: CSV must contain 'Temp' and 'lockin' columns. Found: {df.columns.tolist()}")
+        return
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(df['Temp'], 10*(df['lockin'])/1e-3, marker='o', linestyle='-', markersize=2, label='Lockin Signal')
+    
+    # Formatting
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Lockin Signal (V)')
+    plt.title(f'Lockin Output vs Temperature: {filename}')
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend()
+    if save_path:
+        plt.savefig(save_path, dpi=300) # dpi=300 ensures high resolution
+        print(f"Plot saved to {save_path}")
+    plt.show()
+
 if __name__ == "__main__":
-    plot_phase_sweep('csv/phase_sweep_data_non_sc.csv')
+    # plot_phase_sweep('csv/phase_sweep_data_non_sc.csv')
+    plot_lockin_vs_temp('csv/temp_vs_lockin_outp_1kHz.csv',"temp_vs_lockin_outp_1kHz.png")
     # timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')

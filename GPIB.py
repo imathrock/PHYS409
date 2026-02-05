@@ -57,26 +57,26 @@ def lockin_change_phase(pbus : PrologixBus, i : int) -> None:
     pbus.SendCommand(pbus.lockin_addr,("P"+str(i)))
 
 
-if __name__ == "__main__":
-    pbus = PrologixBus()
-    pbus.DMM_addr = 20
-    #config DMM
-    pbus.SendCommand(pbus.DMM_addr,"MEAS:FRES? 10000, 001")
+# if __name__ == "__main__":
+#     pbus = PrologixBus()
+#     pbus.DMM_addr = 20
+#     #config DMM
+#     pbus.SendCommand(pbus.DMM_addr,"MEAS:FRES? 10000, 001")
 
-    data_buffer = []
-    print("Starting measurement loop...")
-    start_time = time.time()
-    for i in range(0,7500):
-        current_time = time.time() - start_time
-        resistance = meas4W
-        data_buffer.append([current_time,resistance])
-        print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
-        time.sleep(0.1)
+#     data_buffer = []
+#     print("Starting measurement loop...")
+#     start_time = time.time()
+#     for i in range(0,7500):
+#         current_time = time.time() - start_time
+#         resistance = meas4W
+#         data_buffer.append([current_time,resistance])
+#         print(f"Recorded: Time={current_time:.2f}s, R={resistance}")
+#         time.sleep(0.1)
 
-    with open('temperature-resistance.csv', mode='w',newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Time', 'Ohms'])
-        writer.writerows(data_buffer)
+#     with open('temperature-resistance.csv', mode='w',newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow(['Time', 'Ohms'])
+#         writer.writerows(data_buffer)
 
 
     # # Define filename

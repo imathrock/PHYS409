@@ -56,6 +56,25 @@ def lockin_outp(pbus : PrologixBus) -> float:
 def lockin_change_phase(pbus : PrologixBus, i : int) -> None:
     pbus.SendCommand(pbus.lockin_addr,("P"+str(i)))
 
+def DMMconfig4Wres(pbus : PrologixBus) -> None:
+    pbus.SendCommand(pbus.DMM_addr,"MEAS:FRES? 10000, 001")
+    print("DMM configuration set to 4 wire resistance measurement, range 10000, res 001")
+
+def lockin_lockout(pbus : PrologixBus) -> None:
+    pbus.SendCommand(pbus.lockin_addr,"L1")
+    print("Lock in Amplifier Front panel Locked out")
+
+def lockin_lockin(pbus : PrologixBus) -> None:
+    pbus.SendCommand(pbus.lockin_addr,"L0")
+    print("Lock in Amplifier Front panel now active")
+
+
+def init():
+    pbus = PrologixBus()
+    pbus.lockin_addr = 23
+    pbus.DMM_addr = 20
+    pbus.FG_addr = 19
+    return pbus
 
 # if __name__ == "__main__":
 #     pbus = PrologixBus()

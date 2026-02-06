@@ -52,10 +52,6 @@ def timevsres(csv_filename, save_path):
 
 
 def plot_lockin_vs_temp(filename, save_path):
-    """
-    Plots Lockin signal vs Temperature from a CSV file.
-    Assumes columns are named 'lockin' and 'Temp'.
-    """
     # Load data
     try:
         df = pd.read_csv(filename)
@@ -67,11 +63,9 @@ def plot_lockin_vs_temp(filename, save_path):
     if 'Temp' not in df.columns or 'lockin' not in df.columns:
         print(f"Error: CSV must contain 'Temp' and 'lockin' columns. Found: {df.columns.tolist()}")
         return
-
     # Plot
     plt.figure(figsize=(10, 6))
     plt.plot(df['Temp'], 10*(df['lockin'])/1e-3, marker='o', linestyle='-', markersize=2, label='Lockin Signal')
-    
     # Formatting
     plt.xlabel('Temperature (K)')
     plt.ylabel('Lockin Signal (V)')

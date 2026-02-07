@@ -20,14 +20,14 @@ def sweep_phase(pbus,csv_file):
 
 def find_peak_phase(pbus):
     max_phase = 0
-    raw_lockin = GPIB.lockin_outp(pbus)
-    prev_val = raw_lockin.decode('utf-8') if isinstance(raw_lockin, bytes) else raw_lockin
+    max_val = -1.0
     for i in range(1, 360):
         GPIB.lockin_change_phase(pbus, i)
         time.sleep(0.5)
         raw_lockin = GPIB.lockin_outp(pbus)
         lockin_val = raw_lockin.decode('utf-8') if isinstance(raw_lockin, bytes) else raw_lockin
-        if(lockin_val > prev_val):
+        if(abs(lockin_val) > max_val):
+            max_val = abs(lockin_val)
             max_phase = i
     return max_phase
     

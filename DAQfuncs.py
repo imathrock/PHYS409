@@ -18,17 +18,48 @@ def sweep_phase(pbus,csv_file):
             f.flush()
             print(f"Phase: {i} | Lockin: {lockin_val} | Resistance: {resistance_val}")
 
+# def find_peak_phase(pbus):
+#     max_phase = 0
+#     max_val = -1.0
+#     for i in range(1, 360):
+#         GPIB.lockin_change_phase(pbus, i)
+#         time.sleep(0.5)
+#         raw_lockin = GPIB.lockin_outp(pbus)
+#         lockin_val = raw_lockin.decode('utf-8') if isinstance(raw_lockin, bytes) else raw_lockin
+#         if(abs(lockin_val) > max_val):
+#             max_val = abs(lockin_val)
+#             max_phase = i
+#     return max_phase
+
 def find_peak_phase(pbus):
     max_phase = 0
-    max_val = -1.0
-    for i in range(1, 360):
+    max_val = -1.0  # Initialize lower than any possible signal magnitude
+
+    # Iterate through phases (0 to 359)
+    for i in range(0, 360):
         GPIB.lockin_change_phase(pbus, i)
-        time.sleep(0.5)
+        
+        # Wait for the lock-in to settle (critical for accurate reading)
+        time.sleep(0.1) 
+        
         raw_lockin = GPIB.lockin_outp(pbus)
-        lockin_val = raw_lockin.decode('utf-8') if isinstance(raw_lockin, bytes) else raw_lockin
-        if(abs(lockin_val) > max_val):
-            max_val = abs(lockin_val)
+        
+        # Decode and convert to float
+        if isinstance(raw_lockin, bytes):
+            text_val = raw_lockin.decode('utf-8').strip()
+        else:
+            text_val = str(raw_lockin).strip()
+            
+        try:
+            current_mag = abs(float(text_val))
+        except ValueError:
+            continue # Skip iteration if reading fails
+
+        # Compare against the highest value found SO FAR
+        if current_mag > max_val:
+            max_val = current_mag
             max_phase = i
+            
     return max_phase
     
 def lockin_vs_temp(pbus,csv_file : str, num_points : int, lockin_phase : int):

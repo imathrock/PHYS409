@@ -65,7 +65,7 @@ def plot_lockin_vs_temp(filename, save_path):
         return
     # Plot
     plt.figure(figsize=(10, 6))
-    plt.plot(df['Temp'], -10*(df['lockin'])/1e-4, marker='o', linestyle='-', markersize=2, label='Lockin Signal')
+    plt.plot(df['Temp'], 10*(df['lockin'])/1e-4, marker='o', linestyle='-', markersize=2, label='Lockin Signal')
     # Formatting
     plt.xlabel('Temperature (K)')
     plt.ylabel('Lockin Signal (V)')
@@ -79,5 +79,5 @@ def plot_lockin_vs_temp(filename, save_path):
 
 if __name__ == "__main__":
     # plot_phase_sweep('csv/phase_sweep_data_non_sc.csv')
-    plot_lockin_vs_temp('csv/1kHz_temp_vs_lockin.csv',"t_vs_lockin_1kHz.png")
+    plot_lockin_vs_temp('1kHz_temp_vs_lockin.csv',"temp_vs_lockin_1kHz.png")
     # timevsres('csv/temperature-resistance.csv', 'Time_vs_res.png')
